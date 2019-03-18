@@ -11,10 +11,14 @@ stateCodes <- as.character(unique(subset(gtrendsR::countries, country_code=="US"
 res <- NULL
 for(st in stateCodes){
   print(st)
-  tmp <- gtrends(c("flu", "influenza"), geo = st, low_search_volume = TRUE)$interest_over_time
+  tmp <- gtrends(c("influenza"), geo = st, low_search_volume = TRUE)$interest_over_time
   tmp$stateName <- sapply(strsplit(st,"-"), `[`, 2)
   res <- rbind(res, tmp)
 }
+
+# Change hits data to numeric
+res$hits[res$hits == "<1"] <- "0"
+res$hits <- as.numeric(res$hits)
 
 # Get MMWR Week of Date
 res <- cbind(res, MMWRweek(res$date))
@@ -23,9 +27,6 @@ res <- res %>%
          year = MMWRyear) %>%
   select(-MMWRweek, -MMWRyear, -MMWRday)
 
-# Change hits data to numeric
-res$hits[res$hits == "<1"] <- "0"
-res$hits <- as.numeric(res$hits)
 
 # Remove weeks we don't need
 res <- res[-which(res$week > 20 & res$week < 40), ]
@@ -155,7 +156,5 @@ googleFlu <- res %>%
 # Save the data
 devtools::use_data(googleFlu, overwrite = TRUE)
 
-ggplot(res) + 
-  geom_point(aes(x=week, y=hit)) + 
-  theme_bw() + labs(y="Search Hits", x="Date") +
-  facet_grid(season~region)
+# Plot the data
+ggplot(subset(googleFlu, region=="Region 7")) + geom_point(aes(x=week, y=hit)) + facet_grid(~season)
