@@ -43,8 +43,13 @@ for(reg in 1:10){
 dualsim$y[dualsim$y < 0] <- abs(dualsim$y[dualsim$y < 0])
 
 # Add count data
-dualsim$count <- dualsim$y * 10000 
-dualsim$size <- 10000
+dualsim$num <- sample(x=c(9900:10100), size=nrow(dualsim), replace=TRUE)
+dualsim$count <- round(dualsim$y * dualsim$num)
+dualsim$y <- dualsim$count/dualsim$num
+
+
+
+
 
 # Plot the data
 ggplot(data=dualsim) + 
